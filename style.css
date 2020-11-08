@@ -1,0 +1,44 @@
+
+* { margin: 0; padding: 0; border: 0;box-sizing: border-box; }
+#header{
+    width: 100%;
+    height: 44px;
+    background: blue;
+}
+#container{
+    width: 100%;
+    height: calc(100vh - 44px - 100px);
+    display: flex;
+}
+#sider{
+    width: 15%;
+    height: calc(100vh - 44px - 100px);
+    background: green;
+}
+#container2{
+    width: 85%;
+    height: calc(100vh - 44px - 100px);
+    background: yellow;
+    overflow: auto;
+}
+#message{
+    width: 100%;
+    height: 2000px;
+    background: wheat;
+    overflow: auto;
+}
+#footer{
+    width: 100%;
+    height: 100px;
+    background: aqua;
+
+}
+form { background: beige; padding: 3px; bottom: 0; width: 100%; height: 100px }
+form input { border: 0; padding: 10px; width: 90%; margin-right: 0.5%; height: 80%;
+    top: 50%; /*偏移*/
+    margin-top: 10px;
+}
+
+form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px;
+    top: 50%;
+}

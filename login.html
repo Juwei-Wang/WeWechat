@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>登陆</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+    body {
+        padding-top: 40px;
+        padding-bottom: 40px;
+        background-color: #eee;
+    }
+
+    .form-signin {
+        max-width: 330px;
+        padding: 15px;
+        margin: 0 auto;
+    }
+    .form-signin .form-signin-heading,
+
+    .form-signin .form-control {
+        position: relative;
+        height: auto;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 10px;
+        font-size: 16px;
+    }
+    .form-signin .form-control:focus {
+        z-index: 2;
+    }
+    .form-signin .form-signin-heading{
+        margin-bottom: 10px;
+    }
+    .form-signin{
+        font-weight: normal;
+    }
+    .form-signin input[type="text"] {
+        margin-bottom: 10px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    .form-signin input[type="password"] {
+        margin-bottom: 10px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+</style>
+<body>
+<div class="container">
+    <h2 class="form-signin-heading text-center">Log In</h2>
+
+    <form class="form-signin" action="" method="post" enctype="multipart/form-data">
+        <label for="inputUsername" class="sr-only">Username</label>
+        <input type="text" id="inputUsername" class="form-control" placeholder="Username" name="userid" required autofocus>
+        <label for="inputPassword" class="sr-only">Password</label>
+        <input type="password" id="inputPassword" class="form-control" placeholder="Password" name="password" required>
+        <a href="signup" class="sign up" id="signup">Sign up</a>
+        <button class="btn btn-lg btn-primary btn-block"  id="loginbutton" type="submit">Go</button>
+    </form>
+
+</div>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+    $(function () {
+        var socket = io();
+        //发出请求
+        $('#loginbutton').click(function(e) {
+            e.preventDefault(); // prevents page reloading
+            console.log($('#inputUsername').val());
+            if ($('#inputUsername').val() === ''){
+                alert("Please enter username");
+            }
+            if($('#inputPassword').val() === ''){
+                alert("Please enter password");
+            }
+            socket.emit('LogIN', $('#inputUsername').val(),$('#inputPassword').val());
+            $('#inputUsername').val('');
+            $('#inputPassword').val('');
+            console.log("I posted already!!");
+            return false;
+        });
+
+        $('#signup').click(function(e) {
+            e.preventDefault(); // prevents page reloading
+            socket.emit('signuppage', $('#inputUsername').val());
+            return false;
+        });
+
+        //接受回应行为
+        //拿到返回的用户名
+        socket.on('LogIN', function(msg){
+            window.location.replace('http://localhost:9999/42');
+        });
+
+        socket.on('signuppage', function(msg){
+            window.location.replace('http://localhost:9999/43');
+        });
+
+        socket.on('donuser', function(msg){
+            alert("We don't find this User!");
+        });
+
+        socket.on('wrongpassword', function(msg){
+            alert("The password is not valid, please try again");
+        });
+
+
+    });
+</script>
+
+</body>
+</html>

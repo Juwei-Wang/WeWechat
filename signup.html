@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>注册</title>
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<style>
+    body {
+        padding-top: 40px;
+        padding-bottom: 40px;
+        background-color: #eee;
+    }
+
+    .form-signin {
+        max-width: 330px;
+        padding: 15px;
+        margin: 0 auto;
+    }
+    .form-signin .form-signin-heading,
+
+    .form-signin .form-control {
+        position: relative;
+        height: auto;
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        padding: 10px;
+        font-size: 16px;
+    }
+    .form-signin .form-control:focus {
+        z-index: 2;
+    }
+    .form-signin .form-signin-heading{
+        margin-bottom: 10px;
+    }
+    .form-signin{
+        font-weight: normal;
+    }
+    .form-signin input[type="text"] {
+        margin-bottom: 10px;
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    .form-signin input[type="password"] {
+        margin-bottom: 10px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+</style>
+<body>
+<div class="container">
+    <h2 class="form-signin-heading text-center">Sign up</h2>
+
+    <form class="form-signin" action="" method="post" enctype="multipart/form-data">
+        <label for="signupUsername" class="sr-only">Username </label>
+        <input type="text" id="signupUsername" class="form-control" placeholder="Username(at least 4 characters)" name="userid" required autofocus>
+        <label for="signupPassword" class="sr-only">Password</label>
+        <input type="password" id="signupPassword" class="form-control" placeholder="Password(at least 4 characters)" name="password" required autofocus>
+        <button class="btn btn-lg btn-primary btn-block"  id="signupbutton" type="submit">Sign up</button>
+    </form>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script>
+    $(function () {
+        var socket = io();
+        $('#signupbutton').click(function(e) {
+            e.preventDefault(); // prevents page reloading
+            console.log($('#signupUsername').val());
+            console.log($('#signupPassword').val());
+            socket.emit('signup', $('#signupUsername').val(),$('#signupPassword').val());
+            $('#signupUsername').val('');
+            $('#signupPassword').val('');
+            return false;
+        });
+
+        socket.on('signup', function(damsg){
+            alert("sign up ! Success!");
+            console.log("I recieved");
+            window.location.replace('http://localhost:9999/');
+        });
+
+        socket.on('failsignup1',function (msg) {
+            alert("Please enter correct username and password");
+        });
+
+        socket.on('failsignup2',function (msg) {
+            alert("Username already exist");
+        })
+
+    });
+
+</script>
+
+
+</body>
+</html>

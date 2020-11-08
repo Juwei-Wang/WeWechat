@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <style>
+        * { margin: 0; padding: 0; border: 0;box-sizing: border-box; }
+        #header{
+            width: 100%;
+            height: 44px;
+            background-color: #FFDEE9;
+            background-image: linear-gradient(0deg, #FFDEE9 0%, #B5FFFC 100%);
+
+        }
+        #container{
+            width: 100%;
+            height: calc(100vh - 44px - 100px);
+            display: flex;
+        }
+        #sider{
+            width: 15%;
+            height: calc(100vh - 44px - 100px);
+            background-color: #85FFBD;
+            background-image: linear-gradient(45deg, #85FFBD 0%, #FFFB7D 100%);
+
+        }
+        #container2{
+            width: 85%;
+            height: calc(100vh - 44px - 100px);
+            background: yellow;
+            overflow-y: auto;
+        }
+        #message{
+            width: 100%;
+            height: 570px;
+            background: wheat;
+            overflow-y: auto;
+        }
+        #footer{
+            width: 100%;
+            height: 100px;
+            background: aqua;
+
+        }
+        form { background: beige; padding: 3px; bottom: 0; width: 100%; height: 100px }
+        form input { border: 0; padding: 10px; width: 90%; margin-right: 0.5%; height: 80%;
+            top: 50%; /*偏移*/
+            margin-top: 10px;
+        }
+
+        form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px;
+            top: 50%;
+        }
+
+        img{
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+
+
+</head>
+<body>
+<div id="header"></div>
+<div id="container">
+    <div id="sider">Online user</div>
+    <div id="container2">
+        <div id="message">
+            <ul id="messages">
+            </ul>
+        </div>
+    </div>
+</div>
+<div id="footer">
+    <form action="">
+        <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+</div>
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+
+<script>
+    $(function () {
+        var socket = io();
+
+        $(document).ready(function() {
+            console.log( "ready!" );
+            socket.emit('loginF5',"hello");
+        });
+
+        $('#m').focus(function(e) {
+            e.preventDefault(); // prevents page reloading
+            var currentID = $("#header p:first-child").attr('id');
+            if (currentID == "clogout"){
+                alert("Your account is disabled now, please log in again");
+                window.location.replace('http://localhost:9999');
+            }
+            console.log(currentID);
+            socket.emit('changecurrent',currentID);
+            return false;
+        });
+
+        $('form').submit(function(e) {
+            e.preventDefault(); // prevents page reloading
+            socket.emit('chat message', $('#m').val());
+            $('#m').val('');
+            return false;
+        });
+
+        var chatID = 0;
+        socket.on('chat message', function(damsg, mss, currentUsername,usercolorx){
+            var currentID = $("#header p:first-child").attr('id');
+            console.log("I recieved");
+            $('#messages').append($('<li class ="' + currentUsername + '">').text(currentUsername + "     " + damsg));
+            console.log("change color to " + usercolorx);
+            $("." + currentUsername).css('color', usercolorx);
+            var chatTagID = "chat" + chatID;
+            mss = apply_smileys1(mss);
+            mss = apply_smileys2(mss);
+            mss = apply_smileys3(mss);
+            if(currentUsername == currentID) {
+                $('#messages').append($('<li id= "' + chatTagID + '" style="font-weight: bold">'));
+                $("#"+ chatTagID).html(mss);
+                chatID ++;
+            }else {
+                $('#messages').append($('<li id= "' + chatTagID + '">'));
+                $("#"+ chatTagID).html(mss);
+                chatID ++;
+            }
+            $("#message").scrollTop($("#message")[0].scrollHeight);
+        });
+
+        socket.on('failcname1', function(){
+            $('#messages').append($('<li style="font-weight: bold; color: red">').text("Sorry, we are not able to change your name as this name is existed. "));
+        });
+
+        socket.on('failcname2', function(){
+            $('#messages').append($('<li style="font-weight: bold; color: red">').text("Name invalid!! please try other name"));
+            $('#messages').append($('<li style="font-weight: bold; color: red">').text("Should be at least 4 characters"));
+        });
+
+        socket.on('failccolor', function(){
+            $('#messages').append($('<li style="font-weight: bold; color: red">').text("Color invalid!! please try other color"));
+            $('#messages').append($('<li style="font-weight: bold; color: red">').text("Please enter statement like /color <000000>"));
+        });
+
+        socket.on('loginF5', function(msg, currentUser,chathistory,currentUsername){
+            console.log(currentUser);
+            console.log(chathistory);
+
+
+
+            for (let i = 0; i < chathistory.length; i++) {
+                var mss1 = apply_smileys1(chathistory[i][2]);
+                mss1 = apply_smileys2(mss1);
+                mss1 = apply_smileys3(mss1);
+                var chatTagID = "chat" + chatID;
+                $('#messages').append($('<li class ="' + chathistory[i][0] + '">').text(chathistory[i][0] + "     " + chathistory[i][1]));
+                $("." + chathistory[i][0]).css('color', chathistory[i][3]);
+                if (chathistory[i][0] == currentUsername){
+                    $('#messages').append($('<li id= "' + chatTagID + '" style="font-weight: bold">'));
+                    $("#"+ chatTagID).html(mss1);
+                    chatID ++;
+                }else {
+                    $('#messages').append($('<li id= "' + chatTagID + '">'));
+                    $("#"+ chatTagID).html(mss1);
+                    chatID ++;
+                }
+                $("#message").scrollTop($("#message")[0].scrollHeight);
+            }
+
+            $('#header').append($('<p id="' + currentUsername + '" style="font-weight: bold;color: red">').text("   welcome!   " + currentUsername));
+            var currentID = $("#header p:first-child").attr('id');
+
+            if(currentUser == -1 || msg.length == 0 || currentID == "clogout"){
+                alert("Your account is disabled now, please log in");
+                window.location.replace('http://localhost:9999');
+            }
+
+            // $('#sider').append($('<li>').text("user1"));
+            for (let i = 0; i < msg.length; i++) {
+                if (i == currentUser){
+                    console.log("MMB");
+                    $('#sider').append($('<li style="font-weight: bold;color: red">').text(msg[i]));
+                }else{
+                    $('#sider').append($('<li>').text(msg[i]));
+                }
+            }
+
+        });
+
+        socket.on('updateheader', function(msg){
+            $('#header').empty();
+            $('#header').append($('<p id="' + msg + '" style="font-weight: bold;color: red">').text("   welcome!   " + msg));
+        });
+
+        socket.on('updatesider', function(currentlogin, currentUser){
+            $('#sider').empty();
+            $('#sider').html("Online User");
+            var currentID = $("#header p:first-child").attr('id');
+            for (let i = 0; i < currentlogin.length; i++) {
+                if (currentlogin[i] == currentID){
+                    $('#sider').append($('<li style="font-weight: bold;color: red">').text(currentlogin[i]));
+                }else{
+                    $('#sider').append($('<li>').text(currentlogin[i]));
+                }
+            }
+        });
+
+        socket.on('updatechatlog', function(chathistory,currentUsername){
+            $('#messages').empty();
+            var currentID = $("#header p:first-child").attr('id');
+            for (let i = 0; i < chathistory.length; i++) {
+                var mss2 = apply_smileys1(chathistory[i][2]);
+                mss2 = apply_smileys2(mss2);
+                mss2 = apply_smileys3(mss2);
+                var chatTagID = "chat" + chatID;
+                $('#messages').append($('<li class ="' + chathistory[i][0] + '">').text(chathistory[i][0] + "     " + chathistory[i][1]));
+                $("." + chathistory[i][0]).css('color', chathistory[i][3]);
+                if (chathistory[i][0] == currentID){
+                    $('#messages').append($('<li id= "' + chatTagID + '" style="font-weight: bold">'));
+                    $("#"+ chatTagID).html(mss2);
+                    chatID ++;
+                }else {
+                    $('#messages').append($('<li id= "' + chatTagID + '">'));
+                    $("#"+ chatTagID).html(mss2);
+                    chatID ++;
+                }
+                $("#message").scrollTop($("#message")[0].scrollHeight);
+            }
+        });
+
+        socket.on('disconnect', function(){
+            var currentID = $("#header p:first-child").attr('id');
+            socket.emit('removeCu',currentID);
+        });
+
+        socket.on('connection', function(){
+            var currentID = $("#header p:first-child").attr('id');
+            socket.emit('addcurrent',currentID);
+        });
+
+        socket.on('updatechatlog1', function(){
+            $('#messages').append($('<li style="color: red">').text("Success!"));
+        });
+
+        socket.on('logout', function(){
+            console.log("logout running");
+            $('#header').empty();
+            $('#header').append($('<p id="clogout" style="font-weight: bold;color: red">').text("Your account is disabled now, please log in again"));
+            $('#messages').append($('<li style="color: red">').text("Your account has logged out @-@"));
+        });
+
+
+        // const out = document.getElementById("container2");
+        // let c = 0;
+
+        // $(document).ready(function(){
+        //     var content=document.getElementById('container2');
+        //     var clientheight=content.clientHeight;
+        //     var offsetheight=content.scrollHeight;
+        //     var h=offsetheight-clientheight;
+        //     var position=0;
+        //     function startscroll(){
+        //         if(content.scrollTop<h){position++;content.scrollTop=position}
+        //         if(content.scrollTop>=h){content.scrollTop=0;position=0}
+        //     }
+        //     setInterval(startscroll,100);
+        //
+        //     console.log(clientheight)
+        //     console.log(offsetheight)
+        //
+        // })
+
+        // setInterval(function() {
+        //     // allow 1px inaccuracy by adding 1
+        //     const isScrolledToBottom = out.scrollHeight - out.clientHeight <= out.scrollTop + 1;
+        //
+        //     const newElement = document.createElement("div");
+        //
+        //     newElement.textContent = format('1');
+        //
+        //     out.appendChild(newElement);
+        //
+        //     // scroll to bottom if isScrolledToBottom is true
+        //     if (isScrolledToBottom) {
+        //         out.scrollTop = out.scrollHeight - out.clientHeight
+        //     }
+        // }, 500);
+        //
+        // function format () {
+        //     return Array.prototype.slice.call(arguments).join(' ')
+        // }
+
+        function apply_smileys1(message) {
+            // https://regex101.com/r/yS0eM4/1
+            var regex_smile = /(:\))|(:-\))|(\(:)|(\(-:)/g;
+            message = message.replace(regex_smile,'<img src="http://localhost:9999/44">');
+            return message;
+        }
+
+        function apply_smileys2(message) {
+            // https://regex101.com/r/yS0eM4/1
+            var regex_smile = /(:\()|(:-\()|(\):)|(\)-:)/g;
+            message = message.replace(regex_smile,'<img src="http://localhost:9999/45">');
+            return message;
+        }
+
+        function apply_smileys3(message) {
+            // https://regex101.com/r/yS0eM4/1
+            var regex_smile = /(:o)|(:-\()|(\):)|(\)-:)/g;
+            message = message.replace(regex_smile,'<img src="http://localhost:9999/46">');
+            return message;
+        }
+
+
+        window.onbeforeunload = function () {
+            var currentID = $("#header p:first-child").attr('id');
+            socket.emit('removeCu',currentID);
+        };
+
+        
+        
+    });
+</script>
+
+</body>
+</html>
